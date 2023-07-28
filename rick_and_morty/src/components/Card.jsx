@@ -1,4 +1,6 @@
-export default function Card({name, status, species, gender, origin, image, onClose}) {
+import React from "react";
+
+export default function Card({id, name, status, species, gender, origin, image, onClose}) {
    return (
       <div>
          <button onClick={onClose}>X</button>
