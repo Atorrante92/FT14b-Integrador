@@ -11,7 +11,9 @@ import { Route, Routes, useLocation, useNavigate} from 'react-router-dom';
 //import React from 'react';
 
 const EMAIL = 'afol@gmail.com';
+const URL = 'http://localhost:3001/rickandmorty/login/';
 const PASSWORD = '123456a';
+
 
 function App() {
    const location = useLocation(); // Este Hook me da un obj con una propiedad llamada pathname
@@ -21,31 +23,45 @@ function App() {
 
    const [access, setAccess] = useState(false);
 
-   const login = (userData) => {
-      if(userData.email === EMAIL && userData.password === PASSWORD) {
-         setAccess(true);  
-         navigate('/home');  // Si el email y la password son correctos, el acceso se habilita y me redirecciona a home. Si no agrego el navigate, luego de logearse quedo en la misma página.
+   // const login = (userData) => {
+   //    if(userData.email === EMAIL && userData.password === PASSWORD) {
+   //       setAccess(true);  
+   //       navigate('/home');  // Si el email y la password son correctos, el acceso se habilita y me redirecciona a home. Si no agrego el navigate, luego de logearse quedo en la misma página.
+   //    }
+   // };
+
+   const login = async (userData) => {  // Con esta fn le estamos enviando información al back
+      try{
+         const { email, password } = userData;
+         const { data } = await axios(URL + `?email=${email}&password=${password}`)
+         const { access } = data;
+
+         setAccess(access);
+         access && navigate('/home'); // Si access es true, me permite ingresa a /home.
+      
+      } catch(error) {
+         console.log(error.message);
       }
-   };
+   }
 
    useEffect(() => {
       !access && navigate('/'); // si access está en false me mantiene en la ruta '/', es defir no puedo entrar a la app
    }, [access]);                // Si no hago la validación con useEffect el usuario puede ingresar al path del navegador, poner /home e ingresar (esto NO puede pasar)
 
-   const onSearch = (id) => {
-      axios(`http://localhost:3001/rickandmorty/character/${id}`)
-      .then(({ data }) => {
-         if (data.name) {
-            setCharacters((oldChars) => [...oldChars, data]);
-         } else {
-            window.alert('¡No hay personajes con este ID!');
-         }
-      });
+   const onSearch = async (id) => {
+      try{
+         const { data } = await axios(`http://localhost:3001/rickandmorty/character/${id}`)
+            if (data.name) {
+               setCharacters((oldChars) => [...oldChars, data]);
+            }
+      } catch(error) {
+         alert('¡No hay personajes con este ID!');
+      }
    };
 
    const onClose = (id) => {
       const charactersFiltered = characters.filter((character) => {
-         return character.id !== parseInt(id);
+         return character.id !== id;
       });
       setCharacters(charactersFiltered)
    };
